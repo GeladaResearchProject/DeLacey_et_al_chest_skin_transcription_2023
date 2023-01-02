@@ -5,7 +5,7 @@
 # 1) Chest redness in male and female geladas: Figures 1,2, and S1
 # 2) Sex differences in gene expression: Figures S2, S3, S4, 3
 # 3) Enrichment analysis vascularization: Figure 4, S5
-# 4) Enrichment analysis androgen and estrogen expression
+# 4) Enrichment analysis androgen and estrogen expression: Figure S6
 
 
 ################################################################################
@@ -25,7 +25,7 @@ library(lme4)
 library(lmerTest) 
 
 # set working data
-# setwd( [insert working data file location here])
+setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/GitHub")
 
 # load data for Results subsection: "Chest redness in male and female geladas"
 load("chest_red_nat_anes.RData")
@@ -102,7 +102,7 @@ fig1
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("fig1.jpeg", plot = fig1, width=8, height=6, units="in", dpi=600)
+# ggsave("fig1.jpeg", plot = fig1, width=8, height=6, units="in", dpi=600)
 dev.off()
 
 
@@ -141,7 +141,7 @@ fig2 <- ggplot(red_anes, aes(x=sex, y=rg, fill=sex)) +
 fig2
 
 #setwd("[File location to save figures")]
-ggsave("fig2.jpeg", plot=fig2, width=8, height=6, units="in", dpi=600)
+# ggsave("fig2.jpeg", plot=fig2, width=8, height=6, units="in", dpi=600)
 dev.off()
 
 # Stats to accompany figure 2
@@ -182,7 +182,7 @@ figs1
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("figs1.jpeg", plot = figs1, width=8, height=6, units="in", dpi=600)
+# ggsave("figs1.jpeg", plot = figs1, width=8, height=6, units="in", dpi=600)
 dev.off()
 
 # remove objects to clean up work space
@@ -214,6 +214,8 @@ library(foreach)
 library(mosaic)
 library(see)
 library(ggpubr)
+library(ggrepel)
+library(tibble)
 
 # prep transparent colors
 makeTransparent <- function(black, alpha = 200){
@@ -389,7 +391,7 @@ meta_adult <- new_meta %>%
 # select those 28 adult individuals from filtered_gene_counts
 LID_adult <-  meta_adult$LID
 filtered_gene_counts_adult <- filtered_gene_counts %>% 
-  select(LID_adult)
+  dplyr::select(LID_adult)
 dim(filtered_gene_counts_adult) #10,226 x 28 
 
 # create design matrix for the base hypothesis including batch effects with meta_adult
@@ -531,7 +533,7 @@ pca_df_noY <- pca_df_noY %>%
   tibble::rownames_to_column("LID")
 # add year, sex, and age_cat_teeth from new_meta
 new_meta_pca <- new_meta %>% 
-  select(LID, Year, Sex, age_cat_teeth)
+  dplyr::select(LID, Year, Sex, age_cat_teeth)
 # connect info by LID
 pca_df_noY <- left_join(pca_df_noY, new_meta_pca, by="LID")
 # make year categorical
@@ -566,7 +568,7 @@ figs2
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("figs2.jpeg", plot=figs2, width=8, height=6, units="in", dpi=600)
+# ggsave("figs2.jpeg", plot=figs2, width=8, height=6, units="in", dpi=600)
 dev.off()
 rm(figs2)
 
@@ -589,6 +591,8 @@ dev.off()
 # PC2 explains 15.5% of the variance
 
 ###------------------------------------###
+library(bbmle) # for AIC comparisons
+
 # STATS FOR PC1 - SEX and YEAR
 # lmm for PC1
 pc_model1 <- lmer(PC1 ~ (1|Year) + Sex, pca_df_noY)
@@ -602,6 +606,7 @@ summary(pc_model2) # Sex is significant Beta=-0.39,  P=0.01
 # lm for PC1 with interaction 
 pc_model3 <- lm(PC1 ~ Year*Sex, pca_df_noY)
 summary(pc_model3) # interaction effect does not make model stronger 
+
 
 AICtab(pc_model1, pc_model2, pc_model3, weights=T) #lm_mf is stronger (including year and sex)
 rm(pc_model1, pc_model2, pc_model3)
@@ -650,7 +655,7 @@ figs3
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("figs3.jpeg", plot=figs3, width=10, height=6, units="in", dpi=600)
+# ggsave("figs3.jpeg", plot=figs3, width=10, height=6, units="in", dpi=600)
 dev.off()
 rm(figs3)
 
@@ -681,7 +686,7 @@ pca_df_noXY <- pca_df_noXY %>%
   tibble::rownames_to_column("LID")
 # add year, sex, and age_cat_teeth from new_meta
 new_meta_pca <- new_meta %>% 
-  select(LID, Year, Sex, age_cat_teeth)
+  dplyr::select(LID, Year, Sex, age_cat_teeth)
 # connect info by LID
 pca_df_noXY <- left_join(pca_df_noXY, new_meta_pca, by="LID")
 # clean workspace
@@ -756,7 +761,7 @@ figs4
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("figs4.jpeg", plot=figs4, width=16, height=8, units="in", dpi=600)
+# ggsave("figs4.jpeg", plot=figs4, width=16, height=8, units="in", dpi=600)
 dev.off()
 rm(figs4a, figs4b, figs4)
 
@@ -916,7 +921,7 @@ fig3
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("fig3.jpeg", plot=fig3, width=12, height=8, units="in", dpi=600)
+# ggsave("fig3.jpeg", plot=fig3, width=12, height=8, units="in", dpi=600)
 dev.off()
 rm(fig3)
 
@@ -947,12 +952,12 @@ summary(lm_avgexp_f)
 rm(avg_combined_exp, avg_female_exp, avg_male_exp, exp_female_genes, exp_male_genes)
 rm(female_bias_genes, lm_avgexp_f, lm_avgexp_m, lm_avgexp_sa, male_bias_adult2, 
    scale_both_sex, scale_female_bias, scale_female_bias_flip, scale_female_bias_flip_df)
-rm(scale_male_bias, scale_male_bias_df, stat_test_fig3, v_exp, v_exp_df)
+rm(scale_male_bias, scale_male_bias_df, stat_test_fig3)
 
 rm(emma_gel_adult2_FDR20, emma_gel_adult2_X, emma_gel_adult2_Y, 
    filtered_gene_counts, filtered_gene_counts_adult,
-   filtered_gene_counts_noXY, filtered_gene_counts_noY,
-   genes, meta_adult, new_counts, new_meta, pc2_lm_year)
+   filtered_gene_counts_noXY,
+   genes, meta_adult, new_counts, pc2_lm_year)
 
 
 ################################################################################
@@ -1083,7 +1088,7 @@ fig4 <- ggplot(angio_GO_violindf, aes(x=name_1006, y=std_beta)) +
 fig4
 # save plot
 #setwd("[File location to save figures")]
-ggsave("fig4.jpeg", plot=fig4, width=18, height=8, units="in", dpi=600)
+# ggsave("fig4.jpeg", plot=fig4, width=18, height=8, units="in", dpi=600)
 dev.off()
 rm(fig4)
 
@@ -1196,20 +1201,20 @@ figs5
 
 # save plot
 #setwd("[File location to save figures")]
-ggsave("figs5.jpeg", plot=figs5, width=18, height=10, units="in", dpi=600)
+# ggsave("figs5.jpeg", plot=figs5, width=18, height=10, units="in", dpi=600)
 dev.off()
 rm(figs5)
 
 # clean workspace
 rm(blood_GO, blood_GO_unique, blood_GO_violindf, blood_GO_violindf_sum,
-   blood_GO_violindf_unique, density_df_blood, NOT_blood_GO)
+   density_df_blood, NOT_blood_GO)
 
 ################################################################################
-###       4) Enrichment analysis androgen and estrogen expression            ###
+###    4) Enrichment analysis androgen and estrogen expression: Figure S6    ###
 ################################################################################
+# Enrichment Analysis for genes involved in protein-protein interaction networks for ESR1, ESR2, and AR
 
 # Use Interlocus Interaction Database 
-
 # name results
 emremml_results = emma_gel_adult2
 # order by ascending std_beta
@@ -1225,8 +1230,9 @@ ophid.names = c('AR','ESR1','ESR2')
 ophid.descriptions =c('360 androgen receptor PPIs (OPHID)', '758 estrogen receptor alpha PPIs (OPHID)', '506 estrogen receptor beta PPIs (OPHID)')
 names(ophid.names) = names(ophid.descriptions) = ophid.proteins
 
-hsap = useEnsembl(biomart = 'ENSEMBL_MART_ENSEMBL',dataset='hsapiens_gene_ensembl', host="https://useast.ensembl.org")
-mmul = useEnsembl(biomart = 'ENSEMBL_MART_ENSEMBL',dataset='mmulatta_gene_ensembl', host="https://useast.ensembl.org")
+
+hsap = biomaRt::useEnsembl(biomart = 'ENSEMBL_MART_ENSEMBL',dataset='hsapiens_gene_ensembl', mirror="useast")
+mmul = biomaRt::useEnsembl(biomart = 'ENSEMBL_MART_ENSEMBL',dataset='mmulatta_gene_ensembl', mirror="useast")
 
 
 mmul.orthology = getBM(
@@ -1309,6 +1315,266 @@ emremml.orthologs_notAR$Category <- "All other genes"
 #  Stats accompanying AR PPI Enrichment 
 ks.test(emremml.orthologs_notAR$std_beta,emremml.orthologs_AR$std_beta, alternative="greater")
 # Males did not have increased expression related to PPI for AR: D=0.04, P=0.46
+
+
+############################---------------------###############################
+# Average standardized ESR1, ESR2, and AR gene expression level for each individual 
+# correlated with anesthetized redness values
+# Included in supplement (Figure S6)
+
+# load red_anes_rna - list of individual's baseline anesthetized redness (rg) value
+# Note: we only have both redness data and RNA-Seq data for N=18 individuals
+load("red_anes_rna.RData")
+
+############################
+#         ESR1             #
+############################
+# Genes associated with ESR1
+dim(emremml.orthologs_ESR1) #553
+
+# use voom normalized gene counts 
+exp_esr1_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_ESR1$ensembl_gene_id)
+# convert gene column to rowname
+exp_esr1_genes <- exp_esr1_genes %>% 
+  column_to_rownames("gene")
+dim(exp_esr1_genes) # 553 x 36
+# transpose 
+exp_esr1_genes <- t(exp_esr1_genes)
+dim(exp_esr1_genes) # 36 x 553
+
+# apply scale to rows 
+scale_esr1 <- apply(exp_esr1_genes,2,scale)
+# average across columns
+avg_esr1_exp <- apply(scale_esr1,1,mean)
+
+# create data frame for avg_esr1_exp
+avg_esr1_exp <- as.data.frame(as.matrix(avg_esr1_exp))
+dim(avg_esr1_exp) 
+# format df and combine with new_meta
+avg_esr1_exp <- bind_cols(avg_esr1_exp, new_meta)
+avg_esr1_exp <- avg_esr1_exp %>% dplyr::rename(avg_exp = V1)
+# add in redness data
+avg_esr1_exp_rg <- left_join(avg_esr1_exp, red_anes_rna, by = "LID")
+avg_esr1_exp_rg <- avg_esr1_exp_rg %>% 
+  filter(!is.na(rg))
+
+summary(avg_esr1_exp_rg$rg)
+summary(avg_esr1_exp_rg$avg_exp)
+
+# plot average expression of ESR1 genes
+esr1_exp_rg <- ggplot(avg_esr1_exp_rg, aes(x=rg, y=avg_exp, col=Sex)) +
+  geom_point(size=5) + 
+  ggtitle("ER-Alpha") + 
+  geom_smooth(method=lm) + 
+  scale_color_manual(values=c(tPurple, tCyan),
+                     labels=c("Female", "Male")) +
+  scale_x_continuous(name= "Redness (Red/Green)",
+                     limits = c(1.1,1.8), breaks=seq(1.1,1.8,0.1)) +
+  scale_y_continuous(name="Mean Expression Level", 
+                     limits = c(-2,1), breaks=seq(-2,1,0.5)) +
+  theme(axis.text=element_text(size=18,
+                               family = 'Arial'),
+        axis.title=element_text(size=18,
+                                family = 'Arial'), 
+        panel.background = element_blank(),
+        axis.line=element_line(color = "black"),
+        plot.title=element_text(size=30,
+                                family = 'Arial'),
+        legend.title = element_blank(),
+        legend.text=element_text(size=18,
+                                 family = 'Arial'),
+        legend.position = "top", 
+        legend.box.background = element_rect(color="black")) 
+esr1_exp_rg
+
+# stats within females
+avg_esr1_exp_rg_f <- avg_esr1_exp_rg[avg_esr1_exp_rg$Sex == "F", ]
+lm_esr1_f <- lm(avg_exp ~ rg, data=avg_esr1_exp_rg_f)
+summary(lm_esr1_f)
+# Beta=3.753, p=0.275
+
+# stats within males
+avg_esr1_exp_rg_m <- avg_esr1_exp_rg[avg_esr1_exp_rg$Sex == "M", ]
+lm_esr1_m <- lm(avg_exp ~ rg, data=avg_esr1_exp_rg_m)
+summary(lm_esr1_m)
+# Beta=0.48, P=0.21
+
+# Stats of expression by sex (does not include redness data)
+lm_esr1_exp_sex <- lm(avg_exp ~ Sex, data = avg_esr1_exp_rg)
+summary(lm_esr1_exp_sex)
+# Males have higher average expression of ER-Alpha genes compared to females 
+# Beta = 0.59, P=0.04
+
+############################
+#         ESR2             #
+############################
+# Genes associated with ESR2
+dim(emremml.orthologs_ESR2) #345
+
+# use voom normmalized gene counts 
+exp_esr2_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_ESR2$ensembl_gene_id)
+# convert gene column to rowname
+exp_esr2_genes <- exp_esr2_genes %>% 
+  column_to_rownames("gene")
+dim(exp_esr2_genes) # 345 x 36
+# transpose 
+exp_esr2_genes <- t(exp_esr2_genes)
+dim(exp_esr2_genes) # 36 x 345
+
+# apply scale to rows 
+scale_esr2 <- apply(exp_esr2_genes,2,scale)
+# average across columns
+avg_esr2_exp <- apply(scale_esr2,1,mean)
+
+# create data frame for avg_esr1_exp
+avg_esr2_exp <- as.data.frame(as.matrix(avg_esr2_exp))
+dim(avg_esr2_exp) 
+# format df and combine with new_meta
+avg_esr2_exp <- bind_cols(avg_esr2_exp, new_meta)
+avg_esr2_exp <- avg_esr2_exp %>% dplyr::rename(avg_exp = V1)
+# add in redness data
+avg_esr2_exp_rg <- left_join(avg_esr2_exp, red_anes_rna, by = "LID")
+avg_esr2_exp_rg <- avg_esr2_exp_rg %>% 
+  filter(!is.na(rg))
+
+summary(avg_esr2_exp_rg$rg)
+summary(avg_esr2_exp_rg$avg_exp)
+
+# plot average expression of ESR2 genes
+esr2_exp_rg <- ggplot(avg_esr2_exp_rg, aes(x=rg, y=avg_exp, col=Sex)) +
+  geom_point(size=5) + 
+  ggtitle("ER-Beta") + 
+  geom_smooth(method=lm) + 
+  scale_color_manual(values=c(tPurple, tCyan),
+                     labels=c("Female", "Male")) +
+  scale_x_continuous(name= "Redness (Red/Green)",
+                     limits = c(1.1,1.8), breaks=seq(1.1,1.8,0.1)) +
+  scale_y_continuous(name="Mean Expression Level", 
+                     limits = c(-2,1), breaks=seq(-2,1,0.5)) +
+  theme(axis.text=element_text(size=18,
+                               family = 'Arial'),
+        axis.title=element_text(size=18,
+                                family = 'Arial'),
+        panel.background = element_blank(),
+        axis.line=element_line(color = "black"),
+        plot.title=element_text(size=30,
+                                family = 'Arial'),
+        legend.title = element_blank(),
+        legend.text=element_text(size=18,
+                                 family = 'Arial'),
+        legend.position = "top", 
+        legend.box.background = element_rect(color="black")) 
+esr2_exp_rg
+
+# stats within females
+avg_esr2_exp_rg_f <- avg_esr2_exp_rg[avg_esr2_exp_rg$Sex == "F", ]
+lm_esr2_f <- lm(avg_exp ~ rg, data=avg_esr2_exp_rg_f)
+summary(lm_esr2_f)
+# Beta=3.47, p=0.288
+
+# stats within males
+avg_esr2_exp_rg_m <- avg_esr2_exp_rg[avg_esr2_exp_rg$Sex == "M", ]
+lm_esr2_m <- lm(avg_exp ~ rg, data=avg_esr2_exp_rg_m)
+summary(lm_esr2_m)
+# Beta=0.45, P=0.26
+
+# Stats of expression by sex (does not include redness data)
+lm_esr2_exp_sex <- lm(avg_exp ~ Sex, data = avg_esr2_exp_rg)
+summary(lm_esr2_exp_sex)
+# Males have higher average expression of ER-Beta genes compared to females 
+# Beta = 0.58, P=0.03
+
+############################
+#           AR             #
+############################
+# Genes associated with AR
+dim(emremml.orthologs_AR) #240
+
+# use voom normmalized gene counts 
+exp_ar_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_AR$ensembl_gene_id)
+# convert gene column to rowname
+exp_ar_genes <- exp_ar_genes %>% 
+  column_to_rownames("gene")
+dim(exp_ar_genes) # 240 x 36
+# transpose 
+exp_ar_genes <- t(exp_ar_genes)
+dim(exp_ar_genes) # 36 x 240
+
+# apply scale to rows 
+scale_ar <- apply(exp_ar_genes,2,scale)
+# average across columns
+avg_ar_exp <- apply(scale_ar,1,mean)
+
+# create data frame for avg_esr1_exp
+avg_ar_exp <- as.data.frame(as.matrix(avg_ar_exp))
+dim(avg_ar_exp) 
+# format df and combine with new_meta
+avg_ar_exp <- bind_cols(avg_ar_exp, new_meta)
+avg_ar_exp <- avg_ar_exp %>% dplyr::rename(avg_exp = V1)
+# add in redness data
+avg_ar_exp_rg <- left_join(avg_ar_exp, red_anes_rna, by = "LID")
+avg_ar_exp_rg <- avg_ar_exp_rg %>% 
+  filter(!is.na(rg))
+
+summary(avg_ar_exp_rg$avg_exp)
+
+# plot average expression of AR genes
+ar_exp_rg <- ggplot(avg_ar_exp_rg, aes(x=rg, y=avg_exp, col=Sex)) +
+  geom_point(size=5) + 
+  ggtitle("AR") + 
+  geom_smooth(method=lm) + 
+  scale_color_manual(values=c(tPurple, tCyan),
+                     labels=c("Female", "Male")) +
+  scale_x_continuous(name= "Redness (Red/Green)",
+                     limits = c(1.1,1.8), breaks=seq(1.1,1.8,0.1)) +
+  scale_y_continuous(name="Mean Expression Level", 
+                     limits = c(-2,1), breaks=seq(-2,1,0.5)) +
+  theme(axis.text=element_text(size=18,
+                               family = 'Arial'),
+        axis.title=element_text(size=18,
+                                family = 'Arial'),
+        panel.background = element_blank(),
+        axis.line=element_line(color = "black"),
+        plot.title=element_text(size=30,
+                                family = 'Arial'),
+        legend.title = element_blank(),
+        legend.text=element_text(size=18,
+                                 family = 'Arial'),
+        legend.position = "top", 
+        legend.box.background = element_rect(color="black")) 
+ar_exp_rg
+
+figs6 <- ggarrange(esr1_exp_rg, esr2_exp_rg, ar_exp_rg,
+          nrow=1, ncol=3, 
+          labels = c("A", "B", "C"),
+          common.legend = FALSE,
+          font.label = list(size= 24,
+                            color = "black",
+                            face = "bold",
+                            family = 'Arial',
+                            vjust=1.5))
+
+# setwd
+# setwd("[file location for saving figures")
+# ggsave("figs6.jpeg", plot=figs6, width=28, height= 10, units="in", dpi=600)
+
+# stats within females
+avg_ar_exp_rg_f <- avg_ar_exp_rg[avg_ar_exp_rg$Sex == "F", ]
+lm_ar_f <- lm(avg_exp ~ rg, data=avg_ar_exp_rg_f)
+summary(lm_ar_f)
+# Beta=2.89, p=0.381
+
+# stats within males
+avg_ar_exp_rg_m <- avg_ar_exp_rg[avg_ar_exp_rg$Sex == "M", ]
+lm_ar_m <- lm(avg_exp ~ rg, data=avg_ar_exp_rg_m)
+summary(lm_ar_m)
+# Beta=0.47, P=0.314
+
+# Stats of expression by sex (does not include redness data)
+lm_ar_exp_sex <- lm(avg_exp ~ Sex, data = avg_ar_exp_rg)
+summary(lm_ar_exp_sex)
+# Males gave marginally higer average expression of AR genes compared to females
+# Beta = 0.053, P=0.051
 
 # clear workspace
 rm(list = ls())

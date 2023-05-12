@@ -26,7 +26,7 @@ library(lmerTest)
 library(ggpubr)
 
 # set working data
-setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/1. MOLEC ECOL SUBMISSION/3. DRYAD")
+setwd("[Insert file location here]")
 
 # load data for Results subsection: "Chest redness in male and female geladas"
 load("chest_red_nat_anes.RData")

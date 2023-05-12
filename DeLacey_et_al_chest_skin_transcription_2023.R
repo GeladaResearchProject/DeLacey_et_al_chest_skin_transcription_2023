@@ -2,14 +2,14 @@
 ### Transcriptional changes capture sex differences in vascularization in a skin coloration signal in a wild primate
 
 # Sections:
-# 1) Chest redness in male and female geladas: Figures 1,2, and S1
-# 2) Sex differences in gene expression: Figures S2, S3, S4, 3
+# 1) Chest redness in male and female geladas: Figures 2, S1, and S2
+# 2) Sex differences in gene expression: Figures S5, S2, S3, S4, 3
 # 3) Enrichment analysis vascularization: Figure 4, S5
 # 4) Enrichment analysis androgen and estrogen expression: Figure S6
 
 
 ################################################################################
-###    1) Chest redness in male and female geladas: Figures 1,2, and S1      ###
+###    1) Chest redness in male and female geladas: Figure 2 and S1      ###
 ################################################################################
 
 # prepare workspace
@@ -23,18 +23,18 @@ library(tidyr)
 library(ggplot2)
 library(lme4) 
 library(lmerTest) 
+library(ggpubr)
 
 # set working data
-setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/GitHub")
+setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/1. MOLEC ECOL SUBMISSION/3. DRYAD")
 
 # load data for Results subsection: "Chest redness in male and female geladas"
 load("chest_red_nat_anes.RData")
 # loads 4 data frames:
-# red_nat: stat 
-# red_range_nat: Figure 1, stat
-# red_anes: Figure 2, stat
-# red_heat_change_anes: Fig S1
-
+# red_nat: Figure 2a, stat 
+# red_range_nat: Figure 2b, stat
+# red_anes: Figure 2c, stat
+# red_heat_change_anes: Figure S1
 
 # prep transparent colors for plotting
 makeTransparent <- function(black, alpha = 200){
@@ -60,97 +60,124 @@ summary(model1)
 # Males display only marginally redder chests than females (Beta=0.11, P=0.06). 
 
 # remove objects to clean up work space
-rm(model1, red_nat)
+rm(model1)
+
+############################---------------------###############################
+# Under natural conditions (not anesthetized), compare male and female chest redness
+
+range(red_nat$rg)
+
+# Plot Figure 2a
+fig2a <- ggplot(red_nat, aes(x=sex, y=rg, fill=sex)) +
+  geom_boxplot(width=0.5) + 
+  ggtitle("Natural Conditions: Redness") + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_dodge(1), dotsize=1.5, binwidth=0.025) +
+  scale_fill_manual(values = c(tPurple, tCyan)) +
+  scale_y_continuous(name="Redness (Red/Green)",
+                     limits= c(1.2,3.2),
+                     breaks = seq(1.2,3.2,0.2)) +
+  scale_x_discrete(labels=c("Female", "Male"),
+                   name="") +
+  theme(axis.text =element_text(size=18,
+                               family = "Arial"),
+        axis.title.y=element_text(size=18,
+                                family = "Arial",
+                                margin =margin(r=12)), 
+        plot.title=element_text(size=18,
+                                family="Arial"),
+        panel.background = element_blank(),
+        axis.line=element_line(color = "black"),
+        legend.position = "none") + 
+  annotate("text", x=1.5, y=3.2, label = "P=0.06", size=6)
+fig2a 
 
 ############################---------------------###############################
 # Under natural conditions (not anesthetized), compare male and female RANGE in chest redness (max - min for each individual)
 dim(red_range_nat) # 23 adult males, 13 adult females
 
-# Plot Figure 1
-fig1 <- ggplot(red_range_nat, aes(x=sex, y=range, fill=sex)) +
-  geom_boxplot() +
-  ggtitle("Natural Conditions") +
-  geom_dotplot(binaxis='y', stackdir='center', position=position_dodge(1), dotsize=1.5, binwidth=0.025) +
+# Plot Figure 2b
+fig2b <- ggplot(red_range_nat, aes(x=sex, y=range, fill=sex)) +
+  geom_boxplot(width=0.5) +
+  ggtitle("Natural Conditions: Range in Redness") +
+  geom_dotplot(binaxis='y', stackdir='center', position=position_dodge(1), dotsize=1.0, binwidth=0.025) +
   scale_fill_manual(values = c(tPurple, tCyan)) +
   scale_y_continuous(name="Range in Redness (Max - Min)",
                      limits= c(0,1.4),
                      breaks = seq(0,1.4,0.2)) +
   scale_x_discrete(labels=c("Female", "Male"),
                    name="") +
-  theme(axis.text=element_text(size=24,
+  theme(axis.text=element_text(size=18,
                                family = "Arial"),
-        axis.title=element_text(size=24,
-                                family = "Arial"),
-        plot.title=element_text(size=24,
+        axis.title.y=element_text(size=18,
+                                  family = "Arial",
+                                  margin =margin(r=12)), 
+        plot.title=element_text(size=18,
                                 family="Arial"),
         panel.background = element_blank(),
         axis.line=element_line(color = "black"),
-        legend.position = "none")
-fig1
+        legend.position = "none") + 
+  annotate("text", x=1.5, y=1.4, label = "P=0.007**", size=6)
+fig2b
 
-signif_fig1 <- compare_means(range ~ sex, data=red_range_nat, method="t.test")
-
-# ADD SIGNIFICANCE BAR
-fig1 <- fig1 +
-  geom_bracket(aes(xmin="F", 
-                   xmax="M", 
-                   label="***"),
-               data=signif_fig1,
-               y.position=1.4,
-               inherit.aes=FALSE)
-fig1
-
-# save plot
-#setwd("[File location to save figures")]
-# ggsave("fig1.jpeg", plot = fig1, width=8, height=6, units="in", dpi=600)
-dev.off()
-
-
-# Stats to accompany Figure 1 
+# Stats to accompany Figure 2b
 model2 <- lm(range ~ sex*camera_brand, data=red_range_nat)
 summary(model2)
 # Males have a wider range in redness within individuals compared to females (Beta=0.63, P=0.007)
-
-# remove objects from workspace
-rm(red_range_nat, fig1, model2, signif_fig1)
 
 ############################---------------------###############################
 # While anesthetized, compare male and female redness
 dim(red_anes) # 20 males, 18 females
 
 # Plot Figure 2
-fig2 <- ggplot(red_anes, aes(x=sex, y=rg, fill=sex)) +
-  geom_boxplot() + 
-  geom_dotplot(binaxis='y', stackdir='center', position=position_dodge(1), dotsize=1.3, binwidth =0.02) + 
+fig2c <- ggplot(red_anes, aes(x=sex, y=rg, fill=sex)) +
+  geom_boxplot(width=0.5) + 
+  geom_dotplot(binaxis='y', stackdir='center', position=position_dodge(1), dotsize=0.75, binwidth =0.02) + 
   scale_fill_manual(values = c(tPurple, tCyan)) +
   scale_y_continuous(name="Redness (Red/Green)",
                      limits = c(1.0, 1.8), 
                      breaks = seq(1.0, 1.8, 0.2)) +
   scale_x_discrete(labels=c("Female", "Male"),
                    name="") + 
-  ggtitle("Anesthetized Conditions") + 
-  theme(axis.text=element_text(size=24,
+  ggtitle("Anesthetized Conditions: Redness") + 
+  theme(axis.text=element_text(size=18,
                                family = "Arial"),
-        axis.title=element_text(size=24,
-                                family = "Arial"),
-        plot.title=element_text(size=24,
+        axis.title.y=element_text(size=18,
+                                  family = "Arial",
+                                  margin =margin(r=12)),
+        plot.title=element_text(size=18,
                                 family="Arial"),
         panel.background = element_blank(),
         axis.line=element_line(color = "black"),
-        legend.position = "none")
-fig2
-
-#setwd("[File location to save figures")]
-# ggsave("fig2.jpeg", plot=fig2, width=8, height=6, units="in", dpi=600)
-dev.off()
+        legend.position = "none") +
+  annotate("text", x=1.5, y=1.8, label = "P=0.40", size=6)
+fig2c 
 
 # Stats to accompany figure 2
 model3 <-  lm(rg ~ camera_brand + sex, data=red_anes)
 summary(model3)
 # While under anesthesia, male geladas did not have redder chests than females (Beta=0.04, P=0.40)
 
+# Make a multipaneled plot for Fig 2a-c
+fig2 <- ggarrange(fig2a, fig2b, fig2c, 
+                  nrow=1, ncol=3,
+                  legend="none", 
+                  common.legend = FALSE, 
+                  labels = c("A", "B", "C"),
+                  font.label = list(size=18, 
+                                    color="black", 
+                                    face="bold", 
+                                    family='Arial', 
+                                    vjust=1.5))
+fig2 
+
+
+# save plot
+#setwd("[File location to save figures")]
+# ggsave("fig2.jpeg", plot = fig2, width=18, height=8, units="in", dpi=600)
+dev.off()
+
 # remove objects to clean up work space
-rm(red_anes, fig2, model3)
+rm(red_anes, fig2, fig2a, fig2b, fig2c, model1,model2, model3)
 
 ############################---------------------###############################
 # Supplementary Material: 
@@ -180,6 +207,7 @@ figs1 <- ggplot(red_heat_change_anes, aes(x=sex, y=change, fill=sex)) +
         legend.position = "none")
 figs1
 
+
 # save plot
 #setwd("[File location to save figures")]
 # ggsave("figs1.jpeg", plot = figs1, width=8, height=6, units="in", dpi=600)
@@ -192,13 +220,10 @@ rm(red_heat_change_anes, figs1)
 ###     2) Sex Differences in Gene Expression: Figures S2, S3, S4, 3         ###
 ################################################################################
 
-# clear workspace
+# clear workspace to begin new section
 rm(list = ls())
 
-# set working data
-#setwd("[File location to save figures")]
-
-# load libraries (make sure no extra packages are included here)
+# load libraries 
 library(biomaRt)
 library(cobs) 
 library(doParallel)
@@ -216,6 +241,8 @@ library(see)
 library(ggpubr)
 library(ggrepel)
 library(tibble)
+library(EMMREML)
+
 
 # prep transparent colors
 makeTransparent <- function(black, alpha = 200){
@@ -230,14 +257,19 @@ makeTransparent <- function(black, alpha = 200){
 tBlack <- makeTransparent("black") # all figures
 tGreen <- makeTransparent("darkgreen") # for figure S2
 tOrange <- makeTransparent("orange") # for figure S2
-tPurple <- makeTransparent("purple4") # for males
-tLightPurple <- makeTransparent("plum2") # for subadult males
-tCyan <- makeTransparent("darkcyan") # for females
-tPTurq <- makeTransparent("paleturquoise") # for subadult females
+tPurple <- makeTransparent("purple4") # for adult females
+tLightPurple <- makeTransparent("plum2") # for subadult females
+tThistle <- makeTransparent("thistle1") # for FDR threshold of 5% for females
+tCyan <- makeTransparent("darkcyan") # for adult males
+tPTurq <- makeTransparent("paleturquoise") # for subadult males
+tLightCyan <- makeTransparent("lightcyan") # for FDR threshold of 5% for males
 tRed <- makeTransparent("darkred") # for figure 4
 
 ############################---------------------###############################
 # Prepare RNA-Seq data for analysis
+
+# set working data
+setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/1. MOLEC ECOL SUBMISSION/3. DRYAD")
 
 ## load data
 load("PID_10120_mmul10.RData")
@@ -455,15 +487,16 @@ qplot(abs(emma_gel_adult2$beta/sqrt(emma_gel_adult2$var_beta)),-log10(emma_gel_a
 # histogram EMMREML Model
 hist(emma_gel_adult2$pval,100, main = "Histogram of p-values for the effect of sex \n in detectably expressed genes", 
      xlab = "p-values", col = tPurple, ylim = c(0,700), cex.main=1.5)
+dev.off()
 
 # genes under FDR 5%
 emma_gel_adult2_FDR5 <- emma_gel_adult2 %>% dplyr::filter(qvalues_FDR20 < 0.05)
 dim(emma_gel_adult2_FDR5) #410 genes
-rm(emma_gel_adult2_FDR5)
+#rm(emma_gel_adult2_FDR5)
 # genes under FDR 10%
 emma_gel_adult2_FDR10 <- emma_gel_adult2 %>% dplyr::filter(qvalues_FDR20 < 0.1)
 dim(emma_gel_adult2_FDR10) #639 genes
-rm(emma_gel_adult2_FDR10)
+#rm(emma_gel_adult2_FDR10)
 # how many genes fall under FDR 20% 
 emma_gel_adult2_FDR20 <- emma_gel_adult2 %>% dplyr::filter(qvalues_FDR20 < 0.2)
 dim(emma_gel_adult2_FDR20) # 1,077 genes pass 
@@ -504,6 +537,55 @@ dim(emma_gel_adult2_FDR20) # 1,068 genes left that pass after Y-linked genes are
 length(emma_gel_adult2_FDR20$gene)/length(emma_gel_adult2$gene)*100
 # 10.5% of the 10,212 detectably expressed genes exhibited significant 
 # differential expression across males and females (n genes=1,068, FDR<20%)
+
+############################---------------------###############################
+
+# Volcano plot for Figure S5 
+
+emma_gel_adult2_volcano <- emma_gel_adult2 %>% 
+  mutate(diff_exp = case_when(
+    std_beta > 3.0 ~ "FDR5_males", 
+    std_beta < -3.0 ~ "FDR5_females",
+    std_beta < 3.0 & std_beta > 2.65 ~ "FDR10_males", 
+    std_beta > -3.0 & std_beta < -2.65 ~ "FDR10_females", 
+    std_beta < 2.65 & std_beta > 2.208 ~ "FDR20_males", 
+    std_beta > -2.65 & std_beta < -2.208 ~ "FDR20_females", 
+    std_beta > -2.208 & std_beta < 2.208 ~ "not")) 
+
+# order in a way I prefer
+emma_gel_adult2_volcano$diff_exp <- factor(emma_gel_adult2_volcano$diff_exp, 
+                                           levels = c("FDR5_females", "FDR10_females", "FDR20_females", 
+                                                      "FDR5_males", "FDR10_males", "FDR20_males", "not"))
+
+emma_gel_adult2_volcano <- emma_gel_adult2_volcano %>% 
+  mutate(log_10 = -log10(pval))
+
+# PLOT FIGURE S5
+figs5 <- ggplot(data=emma_gel_adult2_volcano, aes(x=beta, y=-log10(pval), col=diff_exp)) + 
+  geom_point(alpha = 0.4) + 
+  scale_color_manual(values=c("purple4", "mediumpurple1", "plum", "darkslategray", "cyan4", "paleturquoise", "black"), 
+                     labels=c("FDR < 5% females", "FDR < 10% females", "FDR < 20% females", "FDR < 5% males", "FDR < 10% males", "FDR < 20% males", "Not differentially expressed")) + 
+  scale_x_continuous(name="logFC") + 
+  theme_classic(base_size=20) + 
+  geom_hline(yintercept=2.56, linetype = "dashed", color = "gray50", size = 0.75) + 
+  geom_hline(yintercept=2.1, linetype = "dashed", color = "gray50", size = 0.75) + 
+  geom_hline(yintercept=1.565, linetype = "dashed", color = "gray50", size = 0.75) + 
+  theme(panel.background = element_blank(),
+        axis.text=element_text(size=18,
+                               family = 'Arial'),
+        axis.title=element_text(size=18,
+                                family = 'Arial'),
+        axis.line=element_line(color = "black"), 
+        legend.position = "none")
+figs5
+
+# save plot
+#setwd("[File location to save figures")]
+# ggsave("figs5.jpeg", plot = figs5, width=6, height=6, units="in", dpi=600)
+dev.off()
+
+rm(figs5, emma_gel_adult2_volcano)
+
 
 ############################---------------------###############################
 # PCA Plots (Fig S2, S3, and S4)
@@ -568,7 +650,7 @@ figs2
 
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("figs2.jpeg", plot=figs2, width=8, height=6, units="in", dpi=600)
+# ggsave("figs2.jpeg", plot = figs2, width=8, height=6, units="in", dpi=600)
 dev.off()
 rm(figs2)
 
@@ -655,7 +737,7 @@ figs3
 
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("figs3.jpeg", plot=figs3, width=10, height=6, units="in", dpi=600)
+# ggsave("figs3.jpeg", plot = figs3, width=9, height=6, units="in", dpi=600)
 dev.off()
 rm(figs3)
 
@@ -761,13 +843,13 @@ figs4
 
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("figs4.jpeg", plot=figs4, width=16, height=8, units="in", dpi=600)
+# ggsave("figs4.jpeg", plot = figs4, width=16, height=8, units="in", dpi=600)
 dev.off()
 rm(figs4a, figs4b, figs4)
 
 # clean workspace
 rm(pc1_lm_year, pc1_lmsexyear, pc1_year, pca_df_noXY, pca_df_noY, v_exp_noXY, 
-   v_exp_noY, pca_noXY, pca_noY)
+   v_exp_noY, pca_noXY, pca_noY, pc2_lm_year)
 
 
 ############################---------------------###############################
@@ -879,8 +961,9 @@ fig3 <- fig3  + labs(y= "Mean Expression Level", x= "Age Category") +
   theme(legend.position = "none",
         axis.text=element_text(size=24,
                                family = "Arial"),
-        axis.title=element_text(size=24,
-                                family = "Arial"),
+        axis.title.y=element_text(size=24,
+                                family = "Arial",
+                                margin=margin(r=12)),
         panel.background = element_blank(),
         axis.line=element_line(color = "black"),
         plot.title=element_text(size=24,
@@ -895,33 +978,37 @@ stat_test_fig3 <- compare_means(avg_exp ~ age_cat_teeth, data = avg_combined_exp
 fig3<- fig3 +
   geom_bracket(aes(xmin="subadult male",
                    xmax="adult male",
-                   label="**"),
+                   label="P=0.003**"),
                data=stat_test_fig3,
                y.position=0.95,
-               inherit.aes = FALSE) +
-  geom_bracket(aes(xmin="adult female", 
-                   xmax="adult male",
-                   label="***"),
-               data=stat_test_fig3,
-               y.position=1.1,
-               inherit.aes = FALSE) +
+               inherit.aes = FALSE,
+               label.size=6) +
   geom_bracket(aes(xmin="adult female", 
                    xmax="subadult male",
-                   label="***"),
+                   label="P=0.04*"),
                data=stat_test_fig3,
                y.position=0.8,
-               inherit.aes = FALSE) +
+               inherit.aes = FALSE, 
+               label.size=6) +
+  geom_bracket(aes(xmin="adult female", 
+                   xmax="adult male",
+                   label="P=7.95e-8***"),
+                   data=stat_test_fig3,
+                   y.position=1.2,
+                   inherit.aes = FALSE,
+               label.size=6) +
   geom_bracket(aes(xmin="adult female", 
                    xmax="subadult female",
-                   label="*"),
+                   label="P=0.02*"),
                data=stat_test_fig3,
-               y.position=0.65,
-               inherit.aes = FALSE)
+               y.position=0.55,
+               inherit.aes = FALSE,
+               label.size=6)
 fig3
 
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("fig3.jpeg", plot=fig3, width=12, height=8, units="in", dpi=600)
+# ggsave("fig3.jpeg", plot = fig3, width=12, height=8, units="in", dpi=600)
 dev.off()
 rm(fig3)
 
@@ -932,6 +1019,7 @@ lm_avgexp_m <- lm(avg_exp ~ age_cat_teeth, avg_combined_exp)
 summary(lm_avgexp_m)
 # adult males and subadult males differ (Beta=-0.66, P=0.003)
 # Adult males and subadult females do not differ (small subadult female sample size)
+# adult males and adult females differ (Beta=-1.11, P=7.95x10^-8***)
 
 # Subadult males compared to all 
 avg_combined_exp$age_cat_teeth <- factor(avg_combined_exp$age_cat_teeth, levels=c("subadult male", "subadult female", "adult female", "adult male"))
@@ -957,7 +1045,7 @@ rm(scale_male_bias, scale_male_bias_df, stat_test_fig3)
 rm(emma_gel_adult2_FDR20, emma_gel_adult2_X, emma_gel_adult2_Y, 
    filtered_gene_counts, filtered_gene_counts_adult,
    filtered_gene_counts_noXY,
-   genes, meta_adult, new_counts, pc2_lm_year)
+   genes, meta_adult, new_counts)
 
 
 ################################################################################
@@ -989,11 +1077,11 @@ gene_ID2GO <- lapply(unique(mmul_GO$ensembl_gene_id),
                                               'go_id'])})
 names(gene_ID2GO) <- unique(mmul_GO$ensembl_gene_id)
 #save
-#setwd("[File location to save mmul data")]
+# setwd("[select file location to save"])
 save(mmul, mmul_GO, ensembl_gene_names, file = "chestDEsex_tm3_GO_emmageladult2.RData")
 
 # can skip above and load this in subsequent runs 
-# load("chestDEsex_tm3_GO_emmageladult2.RData")
+load("chestDEsex_tm3_GO_emmageladult2.RData")
 
 ############################---------------------###############################
 # Enrichment Analysis: Angiogenesis related genes
@@ -1088,13 +1176,12 @@ fig4 <- ggplot(angio_GO_violindf, aes(x=name_1006, y=std_beta)) +
 fig4
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("fig4.jpeg", plot=fig4, width=18, height=8, units="in", dpi=600)
+# ggsave("fig4.jpeg", plot = fig4, width=16, height=12, units="in", dpi=600)
 dev.off()
 rm(fig4)
 
 # clean workspace
-rm(angio_GO_violindf, angiogenesis, angiogenesis_GO, angiogenesis_GO_unique)
-rm(NOT_angiogenesis_GO)
+rm(angio_GO_violindf, angiogenesis, angiogenesis_GO, angiogenesis_GO_unique, NOT_angiogenesis_GO,density_df_angio)
 
 ############################---------------------###############################
 # Enrichment Analysis: Blood flow/bood pressure related genes
@@ -1148,7 +1235,7 @@ median(blood_GO_unique$std_beta)
 # find range
 summary(density_df_blood$std_beta) 
 
-# create df for fig s5
+# create df for fig s6
 blood_GO_violindf <- blood_GO %>%
   dplyr::select(std_beta, go_id, name_1006)
 
@@ -1176,8 +1263,8 @@ blood_GO_violindf$name_1006 = with(blood_GO_violindf, reorder(name_1006, std_bet
 
 median(NOT_blood_GO$std_beta)
 
-# PLOT FIGURE S5
-figs5 <- ggplot(blood_GO_violindf, aes(x=name_1006, y=std_beta)) +
+# PLOT FIGURE S6
+figs6 <- ggplot(blood_GO_violindf, aes(x=name_1006, y=std_beta)) +
   geom_beeswarm(cex=1, col=tBlack) +
   geom_jitter(position = position_jitter(seed =1, width = 0.2)) +
   coord_flip() +
@@ -1197,13 +1284,13 @@ figs5 <- ggplot(blood_GO_violindf, aes(x=name_1006, y=std_beta)) +
         axis.line=element_line(color = "black"),
         legend.title = element_blank(),
         legend.position = "none") 
-figs5
+figs6
 
 # save plot
 #setwd("[File location to save figures")]
-# ggsave("figs5.jpeg", plot=figs5, width=18, height=10, units="in", dpi=600)
+# ggsave("figs6.jpeg", plot = figs6, width=18, height=10, units="in", dpi=600)
 dev.off()
-rm(figs5)
+rm(figs6)
 
 # clean workspace
 rm(blood_GO, blood_GO_unique, blood_GO_violindf, blood_GO_violindf_sum,
@@ -1320,7 +1407,7 @@ ks.test(emremml.orthologs_notAR$std_beta,emremml.orthologs_AR$std_beta, alternat
 ############################---------------------###############################
 # Average standardized ESR1, ESR2, and AR gene expression level for each individual 
 # correlated with anesthetized redness values
-# Included in supplement (Figure S6)
+# Included in supplement (Figure S7)
 
 # load red_anes_rna - list of individual's baseline anesthetized redness (rg) value
 # Note: we only have both redness data and RNA-Seq data for N=18 individuals
@@ -1330,17 +1417,17 @@ load("red_anes_rna.RData")
 #         ESR1             #
 ############################
 # Genes associated with ESR1
-dim(emremml.orthologs_ESR1) #553
+dim(emremml.orthologs_ESR1)
 
 # use voom normalized gene counts 
 exp_esr1_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_ESR1$ensembl_gene_id)
 # convert gene column to rowname
 exp_esr1_genes <- exp_esr1_genes %>% 
   column_to_rownames("gene")
-dim(exp_esr1_genes) # 553 x 36
+dim(exp_esr1_genes) 
 # transpose 
 exp_esr1_genes <- t(exp_esr1_genes)
-dim(exp_esr1_genes) # 36 x 553
+dim(exp_esr1_genes) 
 
 # apply scale to rows 
 scale_esr1 <- apply(exp_esr1_genes,2,scale)
@@ -1391,13 +1478,13 @@ esr1_exp_rg
 avg_esr1_exp_rg_f <- avg_esr1_exp_rg[avg_esr1_exp_rg$Sex == "F", ]
 lm_esr1_f <- lm(avg_exp ~ rg, data=avg_esr1_exp_rg_f)
 summary(lm_esr1_f)
-# Beta=3.753, p=0.275
+# Beta=3.797, p=0.271
 
 # stats within males
 avg_esr1_exp_rg_m <- avg_esr1_exp_rg[avg_esr1_exp_rg$Sex == "M", ]
 lm_esr1_m <- lm(avg_exp ~ rg, data=avg_esr1_exp_rg_m)
 summary(lm_esr1_m)
-# Beta=0.48, P=0.21
+# Beta=0.47, P=0.23
 
 # Stats of expression by sex (does not include redness data)
 lm_esr1_exp_sex <- lm(avg_exp ~ Sex, data = avg_esr1_exp_rg)
@@ -1409,17 +1496,17 @@ summary(lm_esr1_exp_sex)
 #         ESR2             #
 ############################
 # Genes associated with ESR2
-dim(emremml.orthologs_ESR2) #345
+dim(emremml.orthologs_ESR2) 
 
 # use voom normmalized gene counts 
 exp_esr2_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_ESR2$ensembl_gene_id)
 # convert gene column to rowname
 exp_esr2_genes <- exp_esr2_genes %>% 
   column_to_rownames("gene")
-dim(exp_esr2_genes) # 345 x 36
+dim(exp_esr2_genes) 
 # transpose 
 exp_esr2_genes <- t(exp_esr2_genes)
-dim(exp_esr2_genes) # 36 x 345
+dim(exp_esr2_genes) 
 
 # apply scale to rows 
 scale_esr2 <- apply(exp_esr2_genes,2,scale)
@@ -1476,29 +1563,29 @@ summary(lm_esr2_f)
 avg_esr2_exp_rg_m <- avg_esr2_exp_rg[avg_esr2_exp_rg$Sex == "M", ]
 lm_esr2_m <- lm(avg_exp ~ rg, data=avg_esr2_exp_rg_m)
 summary(lm_esr2_m)
-# Beta=0.45, P=0.26
+# Beta=0.46, P=0.25
 
 # Stats of expression by sex (does not include redness data)
 lm_esr2_exp_sex <- lm(avg_exp ~ Sex, data = avg_esr2_exp_rg)
 summary(lm_esr2_exp_sex)
 # Males have higher average expression of ER-Beta genes compared to females 
-# Beta = 0.58, P=0.03
+# Beta = 0.58, P=0.04
 
 ############################
 #           AR             #
 ############################
 # Genes associated with AR
-dim(emremml.orthologs_AR) #240
+dim(emremml.orthologs_AR) 
 
 # use voom normmalized gene counts 
 exp_ar_genes <- v_exp_df %>% dplyr::filter(gene %in% emremml.orthologs_AR$ensembl_gene_id)
 # convert gene column to rowname
 exp_ar_genes <- exp_ar_genes %>% 
   column_to_rownames("gene")
-dim(exp_ar_genes) # 240 x 36
+dim(exp_ar_genes) 
 # transpose 
 exp_ar_genes <- t(exp_ar_genes)
-dim(exp_ar_genes) # 36 x 240
+dim(exp_ar_genes) 
 
 # apply scale to rows 
 scale_ar <- apply(exp_ar_genes,2,scale)
@@ -1544,7 +1631,7 @@ ar_exp_rg <- ggplot(avg_ar_exp_rg, aes(x=rg, y=avg_exp, col=Sex)) +
         legend.box.background = element_rect(color="black")) 
 ar_exp_rg
 
-figs6 <- ggarrange(esr1_exp_rg, esr2_exp_rg, ar_exp_rg,
+figs7 <- ggarrange(esr1_exp_rg, esr2_exp_rg, ar_exp_rg,
           nrow=1, ncol=3, 
           labels = c("A", "B", "C"),
           common.legend = FALSE,
@@ -1553,28 +1640,30 @@ figs6 <- ggarrange(esr1_exp_rg, esr2_exp_rg, ar_exp_rg,
                             face = "bold",
                             family = 'Arial',
                             vjust=1.5))
+figs7 
 
 # setwd
 # setwd("[file location for saving figures")
-# ggsave("figs6.jpeg", plot=figs6, width=28, height= 10, units="in", dpi=600)
+# ggsave("figs7.jpeg", plot = figs7, width=24, height=10, units="in", dpi=600)
+
 
 # stats within females
 avg_ar_exp_rg_f <- avg_ar_exp_rg[avg_ar_exp_rg$Sex == "F", ]
 lm_ar_f <- lm(avg_exp ~ rg, data=avg_ar_exp_rg_f)
 summary(lm_ar_f)
-# Beta=2.89, p=0.381
+# Beta=2.91, p=0.374
 
 # stats within males
 avg_ar_exp_rg_m <- avg_ar_exp_rg[avg_ar_exp_rg$Sex == "M", ]
 lm_ar_m <- lm(avg_exp ~ rg, data=avg_ar_exp_rg_m)
 summary(lm_ar_m)
-# Beta=0.47, P=0.314
+# Beta=0.47, P=0.325
 
 # Stats of expression by sex (does not include redness data)
 lm_ar_exp_sex <- lm(avg_exp ~ Sex, data = avg_ar_exp_rg)
 summary(lm_ar_exp_sex)
 # Males gave marginally higer average expression of AR genes compared to females
-# Beta = 0.053, P=0.051
+# Beta = 0.53, P=0.053
 
 # clear workspace
 rm(list = ls())

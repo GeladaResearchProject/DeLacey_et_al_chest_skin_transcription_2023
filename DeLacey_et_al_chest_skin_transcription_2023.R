@@ -26,15 +26,7 @@ library(lmerTest)
 library(ggpubr)
 
 # set working data
-setwd("[Insert file location here]")
-
-# load data for Results subsection: "Chest redness in male and female geladas"
-load("chest_red_nat_anes.RData")
-# loads 4 data frames:
-# red_nat: Figure 2a, stat 
-# red_range_nat: Figure 2b, stat
-# red_anes: Figure 2c, stat
-# red_heat_change_anes: Figure S1
+#setwd("[insert working data file location here]")
 
 # prep transparent colors for plotting
 makeTransparent <- function(black, alpha = 200){
@@ -52,6 +44,9 @@ tCyan <- makeTransparent("darkcyan") # for males
 
 ############################---------------------###############################
 # Under natural conditions (not anesthetized), compare male and female chest redness
+# load data
+red_nat <- read.csv(file="photo_red_nat.csv")
+# red_nat: Figure 2a, stat 
 dim(red_nat) # 144 photos from 24 adult males and 13 adult females 
 
 model1 <- lmer(rg ~ (1|id) + (1|camera_brand) + sex, data=red_nat)
@@ -64,7 +59,6 @@ rm(model1)
 
 ############################---------------------###############################
 # Under natural conditions (not anesthetized), compare male and female chest redness
-
 range(red_nat$rg)
 
 # Plot Figure 2a
@@ -93,7 +87,10 @@ fig2a
 
 ############################---------------------###############################
 # Under natural conditions (not anesthetized), compare male and female RANGE in chest redness (max - min for each individual)
-dim(red_range_nat) # 23 adult males, 13 adult females
+# load data
+red_range_nat <- read.csv(file="photo_red_range_nat.csv")
+dim(red_range_nat) 
+# red_range_nat: Figure 2b, stat
 
 # Plot Figure 2b
 fig2b <- ggplot(red_range_nat, aes(x=sex, y=range, fill=sex)) +
@@ -126,7 +123,10 @@ summary(model2)
 
 ############################---------------------###############################
 # While anesthetized, compare male and female redness
+# load data
+red_anes <- read.csv(file="photo_red_anes.csv")
 dim(red_anes) # 20 males, 18 females
+# red_anes: Figure 2c, stat
 
 # Plot Figure 2
 fig2c <- ggplot(red_anes, aes(x=sex, y=rg, fill=sex)) +
@@ -183,7 +183,9 @@ rm(red_anes, fig2, fig2a, fig2b, fig2c, model1,model2, model3)
 # Supplementary Material: 
 # Change in redness between baseline and application of a heat pack directly to the skin
 # compared between males and females
-# 13 males, 3 females
+# load data
+red_heat_change_anes <- read.csv(file="photo_red_heat_change_anes.csv") # 13 males, 3 females
+# red_heat_change_anes: Figure S1
 
 # Plot Figure S1
 figs1 <- ggplot(red_heat_change_anes, aes(x=sex, y=change, fill=sex)) +
@@ -243,7 +245,6 @@ library(ggrepel)
 library(tibble)
 library(EMMREML)
 
-
 # prep transparent colors
 makeTransparent <- function(black, alpha = 200){
   newColor <- col2rgb(black)
@@ -268,25 +269,25 @@ tRed <- makeTransparent("darkred") # for figure 4
 ############################---------------------###############################
 # Prepare RNA-Seq data for analysis
 
-# set working data
-setwd("/Users/patsydelacey/Documents/1. Research/3. RNA-Seq Project/1. MOLEC ECOL SUBMISSION/3. DRYAD")
-
 ## load data
-load("PID_10120_mmul10.RData")
-# loads R objects for RNA-Seq analyses
-# 
-# for section 2) Sex Differences in Gene Expression: Figures S2, S3, S4, 3 
-  # genes: gene names for ensembl(V1) and VGNC(V2)
-  # metadata: technical and biological variables from all samples 
-  # meta_teeth: uploads teeth morphometric data needed for aging adults
-  # PID_10120_mmul10: gene counts mapped to the annotated macaca mulatta genome
-  # hb_rrna_genes: list of hemoglobin and ribosomal RNA genes from the annotated macaca mulatta genome
-  # mmul10_gene_chr: used for annotation of chromosomal regions
-#
-# for section 4: 
-  # AR: loads ophid results for Androgen Receptor protein
-  # ESR1: loads ophid results for Estrogen Receptor Alpha protein
-  # ESR2: loads ophid results for Estrogen Receptor Beta protein
+# PID_10120_mmul10: gene counts mapped to the annotated macaca mulatta genome
+load("biopsies_PID_10120_mmul10.RData")
+dim(PID_10120_mmul10)
+# hb_rrna_genes: list of hemoglobin and ribosomal RNA genes from the annotated macaca mulatta genome
+hb_rrna_genes <- read.csv(file="biopsies_hb_rrna_genes.csv")
+hb_rrna_genes <- hb_rrna_genes [['gene']] # convert to a vector
+# genes: gene names for ensembl(V1) and VGNC(V2)
+genes <- read.csv(file="biopsies_genes.csv")
+dim(genes)
+# metadata: technical and biological variables from all samples 
+metadata <- read.csv(file="biopsies_metadata.csv")
+dim(metadata)
+# meta_teeth: teeth morphometric data needed for aging adults
+meta_teeth <- read.csv(file="biopsies_meta_teeth.csv")
+dim(meta_teeth)
+# mmul10_gene_chr: used for annotation of chromosomal regions
+mmul10_gene_chr <- read.csv(file="biopsies_mmul10_gene_chr.csv")
+dim(mmul10_gene_chr)
 
 ## proportion of reads mapping to rRNA or HB genes
 hist(apply(PID_10120_mmul10[hb_rrna_genes,],2,sum)/apply(PID_10120_mmul10,2,sum),25)
@@ -1081,7 +1082,7 @@ names(gene_ID2GO) <- unique(mmul_GO$ensembl_gene_id)
 save(mmul, mmul_GO, ensembl_gene_names, file = "chestDEsex_tm3_GO_emmageladult2.RData")
 
 # can skip above and load this in subsequent runs 
-load("chestDEsex_tm3_GO_emmageladult2.RData")
+# load("chestDEsex_tm3_GO_emmageladult2.RData")
 
 ############################---------------------###############################
 # Enrichment Analysis: Angiogenesis related genes
@@ -1301,6 +1302,13 @@ rm(blood_GO, blood_GO_unique, blood_GO_violindf, blood_GO_violindf_sum,
 ################################################################################
 # Enrichment Analysis for genes involved in protein-protein interaction networks for ESR1, ESR2, and AR
 
+# load data
+# protein-protein interactions with AR, ESR1, and ESR2 for ophid analyses
+AR <- read.csv("biopsies_AR.csv")
+ESR1 <- read.csv("biopsies_ESR1.csv")
+ESR2 <- read.csv("biopsies_ESR2.csv")
+
+
 # Use Interlocus Interaction Database 
 # name results
 emremml_results = emma_gel_adult2
@@ -1411,7 +1419,8 @@ ks.test(emremml.orthologs_notAR$std_beta,emremml.orthologs_AR$std_beta, alternat
 
 # load red_anes_rna - list of individual's baseline anesthetized redness (rg) value
 # Note: we only have both redness data and RNA-Seq data for N=18 individuals
-load("red_anes_rna.RData")
+red_anes_rna <- read.csv("biopsies_red_anes_rna.csv")
+
 
 ############################
 #         ESR1             #
